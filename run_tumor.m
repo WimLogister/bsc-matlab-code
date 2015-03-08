@@ -1,3 +1,6 @@
+filename='basic_no_resistance';
+pars=csvread(filename);
+
 % Declare system parameters as global
 rval=0.1; % Cancer growth rate
 sigval=5; % Penalty to total pop. for increased resistance
