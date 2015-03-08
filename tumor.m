@@ -8,5 +8,4 @@ pen=(K-x)/K;
 % Compute mu
 mu=m/(k+be+bp*v);
 dx=r*x*pen-mu*x;
-
 end
