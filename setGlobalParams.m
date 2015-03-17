@@ -1,5 +1,5 @@
-function [ ] = setGlobalParams( rval, sigval, kval, beval, bpval, mval, Kmaxval, vval )
-global r sig k be bp m Kmax u
+function [ ] = setGlobalParams( rval, sigval, kval, beval, bpval, mval, Kmaxval, vval, xval )
+global r sig k be bp m Kmax u x
 r=rval;
 sig=sigval;
 k=kval;
@@ -8,4 +8,5 @@ bp=bpval;
 m=mval;
 Kmax=Kmaxval;
 u=vval;
+x=xval;
 end

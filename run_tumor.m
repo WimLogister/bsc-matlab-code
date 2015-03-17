@@ -9,16 +9,17 @@ beval=0; % Resistance due to environmental factors
 bpval=5; % Effectiveness of resistance strategy
 mval=0.1/5; % Chemotherapy dosage (paper says 0.1 for monotherapy)
 Kmaxval=100; % Maximum carrying capacity
-uval=0; % Evolved resistance
-setGlobalParams(rval,sigval,kval,beval,bpval,mval,Kmaxval,uval);
+uval=5; % Evolved resistance
+xval=100;
+setGlobalParams(rval,sigval,kval,beval,bpval,mval,Kmaxval,uval,xval);
 
 % Declare system input variables
 tumorIni=100;
 
 % Solve the ODE system
-[T,X] = ode45(@popdyn,[0 250],tumorIni);
+[T,U] = ode45(@stratdyn,[0 250],uval);
 
 % Plot results
 figure(1)
-plot(T,X,'r')
+plot(T,U,'r')
 title('Response of tumor population density to chemotherapy, no evolved resistance')
