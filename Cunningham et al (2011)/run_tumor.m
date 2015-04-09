@@ -20,4 +20,4 @@ Xs=X(:,1);
 figure(1)
 plot(T,Xs,'r')
 axis([0 250 0 100]);
-title('Response of tumor population density to chemotherapy, no evolved resistance')
+title('Response of tumor population density to chemotherapy, with evolved resistance')

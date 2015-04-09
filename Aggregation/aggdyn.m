@@ -1,6 +1,6 @@
-function [ dx ] = popdyn( t,x )
+function [ dx ] = aggdyn( t,x )
     % Population and strategy dynamics for a single scalar phenotype strategy
-    global r k be bp m sig Kmax
+    global r sig alpha N k b beta m Kmax
     
     % This will hold the change rates of population and strategy dynamics
     dx=zeros(2,1);
@@ -11,13 +11,21 @@ function [ dx ] = popdyn( t,x )
     % Total sum of population
     X=sum(x(1,:));
     
+    % Numerator of mu
+    top = m*N^alpha/N;
+    
+    % Denominator of mu
+    % Note: since all models we consider only use a single scalar strategy, u = v
+    % and u is just a single scalar value.
+    bottom = k + N * beta * x(2) + b * x(2);
+    
     % Compute mu = effect of therapy, mitigated by some resistance factors
-    mu=m./(k+be+bp*x(2,:));
+    mu = top/bottom;
     
     % Compute population change rate
     dx(1) = x(1,:).*(r*((K-X)./K)-mu);
     % Set evolutionary speed
-    s = 0.1;
+    s = 0.2;
     % Compute strategy value change rate
-    dx(2) = s*(-(r*X.*x(2,:))/(sig*Kmax*exp(x(2,:).^2./(2*sig^2))) +(m*bp)/(k+be+bp*x(2,:))^2);
+    %dx(2) = s*(-(r*X.*x(2,:))/(sig*Kmax*exp(x(2,:).^2./(2*sig^2))) +(m*bp)/(k+be+bp*x(2,:))^2);
 end
