@@ -6,10 +6,7 @@ function [ dx ] = aggdyn( t,x )
     dx=zeros(2,1);
     
     % Compute penalty to carrying capacity due to evolved resistance
-    K=Kfun(x(2,:));
-
-    % Total sum of population
-    X=sum(x(1,:));
+    K=Kfun(x(2));
     
     % Numerator of mu
     top = m*N^alpha/N;
@@ -23,9 +20,10 @@ function [ dx ] = aggdyn( t,x )
     mu = top/bottom;
     
     % Compute population change rate
-    dx(1) = x(1,:).*(r*((K-X)./K)-mu);
+    dx(1) = x(1).*(r*((K-x(1))./K)-mu);
     % Set evolutionary speed
-    s = 0.2;
+    s = 0.1;
     % Compute strategy value change rate
     %dx(2) = s*(-(r*X.*x(2,:))/(sig*Kmax*exp(x(2,:).^2./(2*sig^2))) +(m*bp)/(k+be+bp*x(2,:))^2);
+    dx(2) = s*(-(r*x(1).*x(2))/(sig*Kmax*exp(x(2).^2./(2*sig^2))) + (top*b)/(k+N*beta*x(2)+b*x(2))^2);
 end
