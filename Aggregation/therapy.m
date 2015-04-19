@@ -8,9 +8,14 @@ mval=0.1; % Chemotherapy dosage (paper says 0.1 for monotherapy)
 sval=0.001; % Evolutionary speed
 
 % System parameters
-alphaval=0; % Power to determine the type of aggregation effect
+alphaval=1.3; % Power to determine the type of aggregation effect
 betaval=0; % Scaling factor for other tumor cells' resistance
 Nval=1; % Neighbourhood size
+
+% Dilution: alpha = beta = 0
+% Group detoxification: alpha = 1, beta > 0
+% Danger in numbers: alpha = 1.5, beta = 0
+% Group sellout: beta < 0
 
 % Declare system input variables
 tumorIni=100; % Initial cancer cell population size
@@ -18,9 +23,9 @@ stratIni=0.0; % Initial phenotypic strategy (resistance) value
 tmax=10000;
 steps=10000;
 
-% 100 time steps of treatment, 100 time steps of rest
+% Lengths of treatment and rest periods
 treat_length=2000;
-rest_length=1000;
+rest_length=2000;
 
 % Treatment bookkeeping variables
 treatmentval=1;
@@ -38,12 +43,6 @@ setGlobalParams(rval,sigval,alphaval,Nval,kval,bval,betaval,mval,Kmaxval,...
 Xs=X(:,1);
 
 mu=mean(X(:,1));
-
-% Dilution: alpha = beta = 0
-% Group detoxification: alpha = 1, beta > 0
-% Danger in numbers: alpha = 1.5, beta = 0
-% Group sellout: beta < 0
-
 
 % Plot results
 figure(1)
