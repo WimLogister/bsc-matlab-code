@@ -1,5 +1,5 @@
-function [ ] = setGlobalParams( rval,sigval,alphaval,Nval,kval,bval,betaval,mval,Kmaxval,sval )
-    global r sig alpha N k b beta m Kmax s
+function [ ] = setGlobalParams( rval,sigval,alphaval,Nval,kval,bval,betaval,mval,Kmaxval,sval,indexval,treatmentval,scheduleval )
+    global r sig alpha N k b beta m Kmax s index treatment schedule
     r=rval;
     sig=sigval;
     alpha=alphaval;
@@ -10,4 +10,7 @@ function [ ] = setGlobalParams( rval,sigval,alphaval,Nval,kval,bval,betaval,mval
     m=mval;
     Kmax=Kmaxval;
     s=sval;
+    index=indexval;
+    treatment=treatmentval;
+    schedule=scheduleval;
 end

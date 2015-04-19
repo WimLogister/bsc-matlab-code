@@ -1,6 +1,6 @@
 function [ dx ] = aggdyn( t,x )
     % Population and strategy dynamics for a single scalar phenotype strategy
-    global r sig alpha N k b beta m Kmax s
+    global r sig alpha N k b beta m Kmax s schedule index treatment
     
     % This will hold the change rates of population and strategy dynamics
     dx=zeros(2,1);
@@ -8,8 +8,15 @@ function [ dx ] = aggdyn( t,x )
     % Compute penalty to carrying capacity due to evolved resistance
     K=Kfun(x(2));
     
+    if t > schedule(index)
+        index=index+1;
+        treatment=~treatment;
+    end
+    
+    dosage=treatment*m;
+    
     % Numerator of mu
-    top = (m*N^alpha)/N;
+    top = (dosage*N^alpha)/N;
     
     % Denominator of mu
     % Note: since all models we consider only use a single scalar strategy, u = v
