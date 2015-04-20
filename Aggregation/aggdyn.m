@@ -8,8 +8,26 @@ function [ dx ] = aggdyn( t,x )
     % Compute penalty to carrying capacity due to evolved resistance
     K=Kfun(x(2));
     
+    if x(1) > 100
+        x(1) = 100;
+    end
+    
+    if x(1) < 0
+        x(1) = 0;
+    end
+    
+    if x(2) < 0
+        x(2) = 0;
+    end
+    
+    if K == 0
+        K = eps;
+    end
+    
     if t > schedule(index)
         index=index+1;
+        disp('index:');
+        index
         treatment=~treatment;
     end
     
@@ -28,6 +46,9 @@ function [ dx ] = aggdyn( t,x )
     
     % Compute population change rate
     dx(1) = x(1).*(r*((K-x(1))./K)-mu);
+    if isnan(dx(1)) | isinf(dx(1))
+        disp('NaN detected')
+    end
     % Compute strategy value change rate
     dx(2) = s*(-(r*x(1).*x(2))/(sig*Kmax*exp(x(2).^2./(2*sig^2))) + (top*b)/(k+N*beta*x(2)+b*x(2))^2);
 end
