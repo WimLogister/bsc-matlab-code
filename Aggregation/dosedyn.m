@@ -1,4 +1,4 @@
-function [ dx ] = aggdyn( t,x )
+function [ dx ] = dosedyn( t,x,dosage )
     % Population and strategy dynamics for a single scalar phenotype strategy
     global r sig alpha N k b beta m Kmax s schedule index treatment
     
@@ -26,14 +26,13 @@ function [ dx ] = aggdyn( t,x )
     
     if t > schedule(index)
         index=index+1;
-        disp('index:');
         treatment=~treatment;
     end
     
-    dosage=treatment*m;
+    
     
     % Numerator of mu
-    top = (dosage*N^alpha)/N;
+    top = (dosage*m*N^alpha)/N;
     
     % Denominator of mu
     % Note: since all models we consider only use a single scalar strategy, u = v
@@ -51,3 +50,4 @@ function [ dx ] = aggdyn( t,x )
     % Compute strategy value change rate
     dx(2) = s*(-(r*x(1).*x(2))/(sig*Kmax*exp(x(2).^2./(2*sig^2))) + (top*b)/(k+N*beta*x(2)+b*x(2))^2);
 end
+
