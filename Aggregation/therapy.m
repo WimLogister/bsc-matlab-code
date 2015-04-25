@@ -12,9 +12,9 @@ mval=0.1; % Chemotherapy dosage (paper says 0.1 for monotherapy)
 sval=0.001; % Evolutionary speed
 
 % Aggregation parameters
-alphaval=0; % Power to determine the type of aggregation effect
-betaval=0; % Scaling factor for other tumor cells' resistance
-Nval=1; % Neighbourhood size
+alphaval=1; % Power to determine the type of aggregation effect
+betaval=0.6; % Scaling factor for other tumor cells' resistance
+Nval=5; % Neighbourhood size
 
 % Model different aggregation effects by setting parameters as follows:
 % 1. Dilution: alpha = beta = 0
@@ -39,19 +39,22 @@ steps=10000; % Number of integration steps used in ODE solver
 % time that should be passed as an argument to the derivative function
 % dosedyn. dosedyn Is the function that is passed to the ODE solver.
 
-% Constant, uniform treatment
+% Uniform constant treatment
 treat0 = @(t) 1;
 
-% Low-level constant treatment followed by longer, more intense constant treatment
+% Constant treatment with low intensity phase followed by high intensity phase
 treat1 = @(t) 0.25*(t >= 0 & t <= 2500) + ...
     1.25*( t >= 2501 & t <= 10000);
 
-% Increasingly intense constant treatment
+% Constant treatment of increasing intensity
 treat2 = @(t)0.4*(t >= 0 & t < 2500) + 0.8*(t >= 2500 & t < 5000) ...
     + 1.2*(t >= 5000 & t < 7500) + 1.6*(t >= 7501 & t < 10000);
 
-% Linearly increasing treatment intensity
+% Linearly increasing treatment strategy
 treat3 = @(t) t*2/tmax;
+
+% Quadratically increasing treatment strategy
+treat4 = @(t) t^2*(3/tmax^2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% 3. Solve system and display results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
