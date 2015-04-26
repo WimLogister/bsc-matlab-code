@@ -25,12 +25,6 @@ Nval=5; % Neighbourhood size
 params = struct('r',rval,'sig',sigval,'Kmax',Kmaxval,'k',kval,'b',bval,...
     'm',mval,'s',sval,'alpha',alphaval,'beta',betaval,'N',Nval);
 
-% Declare system input variables
-tumorIni=100; % Initial cancer cell population size
-stratIni=0.0; % Initial phenotypic strategy (resistance) value
-tmax=10000; % Total simulation time
-steps=10000; % Number of integration steps used in ODE solver
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% 2. Sample treatment strategies %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -60,8 +54,21 @@ treat4 = @(t) t^2*(3/tmax^2);
 %%%%% 3. Solve system and display results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Declare system input variables
+tumorIni=100; % Initial cancer cell population size
+stratIni=0.0; % Initial phenotypic strategy (resistance) value
+tmax=10000; % Total simulation time
+steps=10000; % Number of integration steps used in ODE solver
+
+h = f(tumorIni,stratIni,params);
+
+m0=0.5*ones(10000);
+
+options=optimset('Maxiter',2000,'DiffMinChange',1e-12);
+res=fmincon(@h,m0,[],[],[],[],zeros(size(x0)),0.5*ones(size(x0)),[],options);
+
 % Solve the ODE system
-[T,X] = ode45(@(t,x) dosedyn(t,x,treat0(t),params),0:tmax/steps:tmax,[tumorIni stratIni]);
+%[T,X] = ode45(@(t,x) dosedyn(t,x,treat4(t),params),linspace(0, 10000, 100),[tumorIni stratIni]);
 
 muX=mean(X(:,1)) % Average tumor population size
 muU=mean(X(:,2)) % Average resistance strategy value
