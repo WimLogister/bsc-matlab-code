@@ -1,7 +1,7 @@
-function [ dx ] = dosedyn( t,x,dosage,p )
+function [ dx ] = dosedyn( t,x,treat,p )
 % Population and strategy dynamics for a single scalar phenotype strategy
 % according to Brown et al (2015).
-% x is the population, dosage is the treatment intensity, p is a struct
+% x is the population, treat is the treatment intensity, p is a struct
 % array storing system parameters
 
     % Stores dx/dt and du/dt
@@ -30,7 +30,7 @@ function [ dx ] = dosedyn( t,x,dosage,p )
     end
     
     % Compute numerator of treatment efficacy mu
-    top = (dosage*p.m*p.N^p.alpha)/p.N;
+    top = (treat*p.N^p.alpha)/p.N;
     
     % Compute denominator of mu
     % Note: since all models we consider only use a single scalar strategy, u = v

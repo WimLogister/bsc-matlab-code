@@ -58,23 +58,31 @@ treat4 = @(t) t^2*(3/tmax^2);
 tumorIni=100; % Initial cancer cell population size
 stratIni=0.0; % Initial phenotypic strategy (resistance) value
 tmax=10000; % Total simulation time
-steps=10000; % Number of integration steps used in ODE solver
+stepnum=100; % Number of treatment steps used in ODE solver
 
-h = f(tumorIni,stratIni,params);
+T=linspace(0,9900,100);
 
-m0=0.5*ones(10000);
+h = get_fitness_handle(tumorIni,stratIni,params,T);
 
-options=optimset('Maxiter',2000,'DiffMinChange',1e-12);
-res=fmincon(@h,m0,[],[],[],[],zeros(size(x0)),0.5*ones(size(x0)),[],options);
+X = h(0.1);
+
+figure(1);
+
+plot(T,X(:,1));
+
+%m0=zeros(stepnum);
+
+%options=optimset('Maxiter',2000,'DiffMinChange',1e-12);
+res=fmincon(h,m0,[],[],[],[],zeros(size(m0)),0.5*ones(size(m0)),[],options);
 
 % Solve the ODE system
 %[T,X] = ode45(@(t,x) dosedyn(t,x,treat4(t),params),linspace(0, 10000, 100),[tumorIni stratIni]);
 
-muX=mean(X(:,1)) % Average tumor population size
-muU=mean(X(:,2)) % Average resistance strategy value
+%muX=mean(X(:,1)) % Average tumor population size
+%muU=mean(X(:,2)) % Average resistance strategy value
 
-x_label = sprintf('mu_{X} = %.3f',muX);
-u_label = sprintf('mu_{u} = %.3f',muU);
+%x_label = sprintf('mu_{X} = %.3f',muX);
+%u_label = sprintf('mu_{u} = %.3f',muU);
 
 % Plot results
 figure(1)
