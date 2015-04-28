@@ -22,6 +22,8 @@ Nval=5; % Neighbourhood size
 % 3. Danger in numbers: alpha = 1.5, beta = 0
 % 4. Group sellout: beta < 0
 
+global params
+
 params = struct('r',rval,'sig',sigval,'Kmax',Kmaxval,'k',kval,'b',bval,...
     'm',mval,'s',sval,'alpha',alphaval,'beta',betaval,'N',Nval);
 
@@ -58,21 +60,20 @@ treat4 = @(t) t^2*(3/tmax^2);
 tumorIni=100; % Initial cancer cell population size
 stratIni=0.0; % Initial phenotypic strategy (resistance) value
 tmax=10000; % Total simulation time
-stepnum=100; % Number of treatment steps used in ODE solver
 
-T=linspace(0,9900,100);
+% Save system input in structure
+system_input=struct('x0',tumorIni,'u0',stratIni,'tmax',tmax);
+T=linspace(0,9900,100); % Vector holding time points
+rk_timesteps=100; % Number of Runge-Kutte ODE integration steps
 
-h = get_fitness_handle(tumorIni,stratIni,params,T);
+h = get_fitness_handle(system_input,T,rk_timesteps);
 
-X = h(0.1);
+treatnum=100; % Number of treatment / control points
+m0=zeros(treatnum); % Initial treatment guess for optimizer
 
-figure(1);
+global counter
 
-plot(T,X(:,1));
-
-%m0=zeros(stepnum);
-
-%options=optimset('Maxiter',2000,'DiffMinChange',1e-12);
+options=optimset('Maxiter',1000,'DiffMinChange',1e-6);
 res=fmincon(h,m0,[],[],[],[],zeros(size(m0)),0.5*ones(size(m0)),[],options);
 
 % Solve the ODE system
