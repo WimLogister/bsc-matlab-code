@@ -62,18 +62,18 @@ tumorIni=100; % Initial cancer cell population size
 stratIni=0.0; % Initial phenotypic strategy (resistance) value
 tmax=10000; % Total simulation time
 
-% Save system input in structure
-system_input=struct('x0',tumorIni,'u0',stratIni,'tmax',tmax);
-T=linspace(0,9900,100); % Vector holding time points
-rk_timesteps=5000; % Number of Runge-Kutte ODE integration steps
-
-h = get_fitness_handle(system_input,T,rk_timesteps);
-
-treatnum=100; % Number of treatment / control points
+treatnum=20; % Number of treatment / control points
 m0=zeros(1,treatnum); % Initial treatment guess for optimizer
 %m0=0.1+m0;
 global counter
 global soltab
+
+% Save system input in structure
+system_input=struct('x0',tumorIni,'u0',stratIni,'tmax',tmax);
+T=linspace(0,9900,treatnum); % Vector holding time points
+rk_timesteps=5000; % Number of Runge-Kutte ODE integration steps
+
+h = get_fitness_handle(system_input,T,rk_timesteps);
 
 options=optimset('Maxiter',1000,'DiffMinChange',1e-6);
 res=fmincon(h,m0,[],[],[],[],zeros(1,numel(m0)),0.1*ones(1,numel(m0)),[],options);
