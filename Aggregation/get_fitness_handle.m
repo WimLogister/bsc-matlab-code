@@ -8,6 +8,7 @@ function h = get_fitness_handle( sys_input, time_points,  rk_steps )
 % What does this function need? rk needs to be called somewhere
 
 global counter
+global soltab
 
 counter = 0;
 

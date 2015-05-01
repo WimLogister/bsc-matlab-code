@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% 1. Declare system parameters and input %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clear all
 
 % System constants
 rval=0.1; % Cancer growth rate
@@ -64,36 +65,19 @@ tmax=10000; % Total simulation time
 % Save system input in structure
 system_input=struct('x0',tumorIni,'u0',stratIni,'tmax',tmax);
 T=linspace(0,9900,100); % Vector holding time points
-rk_timesteps=100; % Number of Runge-Kutte ODE integration steps
+rk_timesteps=5000; % Number of Runge-Kutte ODE integration steps
 
 h = get_fitness_handle(system_input,T,rk_timesteps);
 
 treatnum=100; % Number of treatment / control points
-m0=zeros(treatnum); % Initial treatment guess for optimizer
-
+m0=zeros(1,treatnum); % Initial treatment guess for optimizer
+%m0=0.1+m0;
 global counter
+global soltab
 
 options=optimset('Maxiter',1000,'DiffMinChange',1e-6);
-res=fmincon(h,m0,[],[],[],[],zeros(size(m0)),0.5*ones(size(m0)),[],options);
+res=fmincon(h,m0,[],[],[],[],zeros(1,numel(m0)),0.1*ones(1,numel(m0)),[],options);
 
-% Solve the ODE system
-%[T,X] = ode45(@(t,x) dosedyn(t,x,treat4(t),params),linspace(0, 10000, 100),[tumorIni stratIni]);
-
-%muX=mean(X(:,1)) % Average tumor population size
-%muU=mean(X(:,2)) % Average resistance strategy value
-
-%x_label = sprintf('mu_{X} = %.3f',muX);
-%u_label = sprintf('mu_{u} = %.3f',muU);
-
-% Plot results
 figure(1)
 
-% Population subplot
-subplot(211), plot(T,X(:,1),'r'), line([0 tmax], [muX muX], 'Color', 'k')
-legend('population density'),axis([0 tmax 0 100])
-text(8000,muX+10,x_label)
-
-% Resistance strategy subplot
-subplot(212), plot(T,X(:,2),'b'), line([0 tmax], [muU muU], 'Color', 'k')
-legend('resistance value', 'Location', 'northwest')
-text(8000,muU+max(X(:,2))/10,u_label)
+plot(soltab(:,1),soltab(:,2))
