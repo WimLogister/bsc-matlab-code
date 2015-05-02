@@ -3,6 +3,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all
 
+load 'res.mat'
+
 % System constants
 rval=0.1; % Cancer growth rate
 sigval=1; % Penalty to total pop. for increased resistance
@@ -75,9 +77,20 @@ rk_timesteps=5000; % Number of Runge-Kutte ODE integration steps
 
 h = get_fitness_handle(system_input,T,rk_timesteps);
 
-options=optimset('Maxiter',1000,'DiffMinChange',1e-6);
-res=fmincon(h,m0,[],[],[],[],zeros(1,numel(m0)),0.1*ones(1,numel(m0)),[],options);
+A=ones(1,treatnum);
+b=0.4;
 
-figure(1)
+%options=optimset('Maxiter',20,'DiffMinChange',1e-6,'Display','iter-detailed');
+%res=fmincon(h,m0,A,b,[],[],zeros(1,numel(m0)),0.1*ones(1,numel(m0)),[],options);
 
-plot(soltab(:,1),soltab(:,2))
+h(res);
+
+%figure(1)
+
+mean(soltab(:,1))
+
+%plot(soltab(:,1),soltab(:,2))
+
+h(0.02+m0)
+
+mean(soltab(:,1))

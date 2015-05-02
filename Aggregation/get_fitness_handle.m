@@ -40,6 +40,6 @@ h = @evaluate_fitness;
             disp(counter);
         end
         
-        fit = -sum(soltab(:,2));
+        fit = sum(soltab(:,2));
     end
 end
