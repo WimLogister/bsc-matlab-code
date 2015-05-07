@@ -89,7 +89,9 @@ h(res);
 
 mean(soltab(:,1))
 
-%plot(soltab(:,1),soltab(:,2))
+subplot(211),plot(soltab(:,1),soltab(:,2))
+
+subplot(212),plot(soltab(:,1),soltab(:,3))
 
 h(0.02+m0)
 
