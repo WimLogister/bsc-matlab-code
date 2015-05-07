@@ -9,7 +9,7 @@ Kmaxval=100; % Maximum carrying capacity
 kval=0.1; % Cells' de novo resistance to therapy
 bval=5; % Effectiveness of resistance
 mval=0.1; % Chemotherapy dosage (paper says 0.1 for monotherapy)
-sval=0.001; % Evolutionary speed
+sval=0.01; % Evolutionary speed
 
 % Aggregation parameters
 alphaval=1; % Power to determine the type of aggregation effect
@@ -28,8 +28,8 @@ params = struct('r',rval,'sig',sigval,'Kmax',Kmaxval,'k',kval,'b',bval,...
 % Declare system input variables
 tumorIni=100; % Initial cancer cell population size
 stratIni=0.0; % Initial phenotypic strategy (resistance) value
-tmax=10000; % Total simulation time
-steps=10000; % Number of integration steps used in ODE solver
+tmax=200; % Total simulation time
+steps=200; % Number of integration steps used in ODE solver
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% 2. Sample treatment strategies %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -75,9 +75,9 @@ figure(1)
 % Population subplot
 subplot(211), plot(T,X(:,1),'r'), line([0 tmax], [muX muX], 'Color', 'k')
 legend('population density'),axis([0 tmax 0 100])
-text(8000,muX+10,x_label)
+text(tmax-tmax*0.2,muX+10,x_label)
 
 % Resistance strategy subplot
 subplot(212), plot(T,X(:,2),'b'), line([0 tmax], [muU muU], 'Color', 'k')
 legend('resistance value', 'Location', 'northwest')
-text(8000,muU+max(X(:,2))/10,u_label)
+text(tmax-tmax*0.2,muU+max(X(:,2))/10,u_label)
