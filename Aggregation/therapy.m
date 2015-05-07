@@ -12,7 +12,7 @@ Kmaxval=100; % Maximum carrying capacity
 kval=0.1; % Cells' de novo resistance to therapy
 bval=5; % Effectiveness of resistance
 mval=0.1; % Chemotherapy dosage (paper says 0.1 for monotherapy)
-sval=0.001; % Evolutionary speed
+sval=0.01; % Evolutionary speed
 
 % Aggregation parameters
 alphaval=1; % Power to determine the type of aggregation effect
@@ -62,37 +62,53 @@ treat4 = @(t) t^2*(3/tmax^2);
 % Declare system input variables
 tumorIni=100; % Initial cancer cell population size
 stratIni=0.0; % Initial phenotypic strategy (resistance) value
-tmax=10000; % Total simulation time
+tmax=365; % Total simulation time
 
-treatnum=20; % Number of treatment / control points
+treatnum=12; % Number of treatment / control points
 m0=zeros(1,treatnum); % Initial treatment guess for optimizer
-%m0=0.1+m0;
-global counter
-global soltab
+mmax=0.2; % Maximum treatment amount
+normtreat=0.04; % "Normal" treatment amount, so the amount given when
+% giving constant treatment
+
+global soltab % Used to store solutions to differential equations
 
 % Save system input in structure
 system_input=struct('x0',tumorIni,'u0',stratIni,'tmax',tmax);
-T=linspace(0,9900,treatnum); % Vector holding time points
-rk_timesteps=5000; % Number of Runge-Kutte ODE integration steps
+T=linspace(0,tmax-tmax/treatnum,treatnum); % Vector holding time points
+rk_timesteps=750; % Number of Runge-Kutte ODE integration steps
 
-h = get_fitness_handle(system_input,T,rk_timesteps);
+% treat is a function handle to the fitness function
+treat = get_fitness_handle(system_input,T,rk_timesteps);
 
+% A and b are a system of equations that make sure that all the decision
+% variables sum to the appropriate amount
 A=ones(1,treatnum);
-b=0.4;
+b=normtreat*treatnum;
 
-%options=optimset('Maxiter',20,'DiffMinChange',1e-6,'Display','iter-detailed');
-%res=fmincon(h,m0,A,b,[],[],zeros(1,numel(m0)),0.1*ones(1,numel(m0)),[],options);
+optimize = 1; % 0 For regular solving, > 0 for optimization
 
-h(res);
+if optimize > 0
+    options=optimset('Maxiter',1000,'DiffMinChange',1e-12,'Display','iter-detailed');
+    res=fmincon(treat,m0,A,b,[],[],zeros(1,numel(m0)),mmax*ones(1,numel(m0)),[],options); 
+else
+    res=treat(normtreat+m0);
+end
 
-%figure(1)
+muX=mean(soltab(:,2)); % Mean population density
+muU=mean(soltab(:,3)); % Mean resistance strategy
 
-mean(soltab(:,1))
+% Plot results
+figure(1)
 
-subplot(211),plot(soltab(:,1),soltab(:,2))
+x_label = sprintf('mu_{X} = %.3f',muX); % Label for population mean
+u_label = sprintf('mu_{u} = %.3f',muU); % Label for resistance mean
 
-subplot(212),plot(soltab(:,1),soltab(:,3))
+% Population subplot
+subplot(211), plot(soltab(:,1),soltab(:,2),'r'), line([0 tmax], [muX muX], 'Color', 'k')
+title('Population density vs time'),axis([0 tmax 0 100])
+text(tmax-tmax*0.2,muX+10,x_label)
 
-h(0.02+m0)
-
-mean(soltab(:,1))
+% Resistance strategy subplot
+subplot(212), plot(soltab(:,1),soltab(:,3),'b'), line([0 tmax], [muU muU], 'Color', 'k')
+title('Evolved resistance vs time'),axis tight
+text(tmax-tmax*0.2,muU+max(soltab(:,3))/10,u_label)
