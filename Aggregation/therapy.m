@@ -64,51 +64,72 @@ tumorIni=100; % Initial cancer cell population size
 stratIni=0.0; % Initial phenotypic strategy (resistance) value
 tmax=365; % Total simulation time
 
-treatnum=12; % Number of treatment / control points
-m0=zeros(1,treatnum); % Initial treatment guess for optimizer
-mmax=0.2; % Maximum treatment amount
-normtreat=0.04; % "Normal" treatment amount, so the amount given when
-% giving constant treatment
+treatnum = 6;
+cntr = 1;
 
 global soltab % Used to store solutions to differential equations
 
-% Save system input in structure
-system_input=struct('x0',tumorIni,'u0',stratIni,'tmax',tmax);
-T=linspace(0,tmax-tmax/treatnum,treatnum); % Vector holding time points
-rk_timesteps=750; % Number of Runge-Kutte ODE integration steps
+while treatnum < tmax
+    
+    m0=zeros(1,treatnum); % Initial treatment guess for optimizer
+    mmax=0.2; % Maximum treatment amount
+    normtreat=0.04; % "Normal" treatment amount, so the amount given when
+    % giving constant treatment
 
-% treat is a function handle to the fitness function
-treat = get_fitness_handle(system_input,T,rk_timesteps);
+    % Save system input in structure
+    system_input=struct('x0',tumorIni,'u0',stratIni,'tmax',tmax);
+    T=linspace(0,tmax-tmax/treatnum,treatnum); % Vector holding time points
+    rk_timesteps=750; % Number of Runge-Kutte ODE integration steps
 
-% A and b are a system of equations that make sure that all the decision
-% variables sum to the appropriate amount
-A=ones(1,treatnum);
-b=normtreat*treatnum;
+    % treat is a function handle to the fitness function
+    treat = get_fitness_handle(system_input,T,rk_timesteps);
 
-optimize = 1; % 0 For regular solving, > 0 for optimization
+    % A and b are a system of equations that make sure that all the decision
+    % variables sum to the appropriate amount
+    A=ones(1,treatnum);
+    b=normtreat*treatnum;
 
-if optimize > 0
-    options=optimset('Maxiter',1000,'DiffMinChange',1e-12,'Display','iter-detailed');
-    res=fmincon(treat,m0,A,b,[],[],zeros(1,numel(m0)),mmax*ones(1,numel(m0)),[],options); 
-else
-    res=treat(normtreat+m0);
+    optimize = 1; % 0 For regular solving, > 0 for optimization
+    show_plot = 1; % 0 For not plotting, > 0 for plotting
+
+    if optimize > 0
+        options=optimset('Maxiter',1000,'DiffMinChange',1e-12,'Display','iter-detailed');
+        res=fmincon(treat,m0,A,b,[],[],zeros(1,numel(m0)),mmax*ones(1,numel(m0)),[],options); 
+    else
+        res=treat(normtreat+m0);
+    end
+
+    muX=mean(soltab(:,2)); % Mean population density
+    muU=mean(soltab(:,3)); % Mean resistance strategy
+
+    output = struct('ctrlpts',treatnum,'muX',muX,'muU',muU,'optimal',res);
+
+    out_filename = sprintf('optimize%u.dat',treatnum);
+
+    struct2csv(output, out_filename);
+
+    if show_plot > 0
+        % Plot results
+        figure(cntr)
+
+        x_label = sprintf('mu_{X} = %.3f',muX); % Label for population mean
+        u_label = sprintf('mu_{u} = %.3f',muU); % Label for resistance mean
+
+        % Population subplot
+        subplot(211),plot(soltab(:,1),soltab(:,2),'r'), line([0 tmax], [muX muX], 'Color', 'k')
+        title('Population density vs time'),axis([0 tmax 0 100])
+        text(tmax-tmax*0.2,muX+10,x_label)
+
+        % Resistance strategy subplot
+        subplot(212), plot(soltab(:,1),soltab(:,3),'b'), line([0 tmax], [muU muU], 'Color', 'k')
+        title('Evolved resistance vs time'),axis tight
+        text(tmax-tmax*0.2,muU+max(soltab(:,3))/10,u_label)
+    end
+
+    treatnum=treatnum*2; % Number of treatment / control points
+    cntr=cntr+1;
 end
 
-muX=mean(soltab(:,2)); % Mean population density
-muU=mean(soltab(:,3)); % Mean resistance strategy
-
-% Plot results
-figure(1)
-
-x_label = sprintf('mu_{X} = %.3f',muX); % Label for population mean
-u_label = sprintf('mu_{u} = %.3f',muU); % Label for resistance mean
-
-% Population subplot
-subplot(211), plot(soltab(:,1),soltab(:,2),'r'), line([0 tmax], [muX muX], 'Color', 'k')
-title('Population density vs time'),axis([0 tmax 0 100])
-text(tmax-tmax*0.2,muX+10,x_label)
-
-% Resistance strategy subplot
-subplot(212), plot(soltab(:,1),soltab(:,3),'b'), line([0 tmax], [muU muU], 'Color', 'k')
-title('Evolved resistance vs time'),axis tight
-text(tmax-tmax*0.2,muU+max(soltab(:,3))/10,u_label)
+% a = struct('muX',73.5,'muU',3.5,'numpoints',24); % Create structure
+% struct2csv(a,'test.dat') % Write data
+% A=importdata('test.dat') % Read data
