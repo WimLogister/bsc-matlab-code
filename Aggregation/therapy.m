@@ -64,12 +64,12 @@ tumorIni=100; % Initial cancer cell population size
 stratIni=0.0; % Initial phenotypic strategy (resistance) value
 tmax=365; % Total simulation time
 
-treatnum = 6;
+treatnum = tmax;
 cntr = 1;
 
 global soltab % Used to store solutions to differential equations
 
-while treatnum < tmax
+while treatnum < treatnum + 1
     
     m0=zeros(1,treatnum); % Initial treatment guess for optimizer
     mmax=0.2; % Maximum treatment amount
@@ -114,16 +114,22 @@ while treatnum < tmax
 
         x_label = sprintf('mu_{X} = %.3f',muX); % Label for population mean
         u_label = sprintf('mu_{u} = %.3f',muU); % Label for resistance mean
+        m_title = sprintf('Opt. treat sched., %u treatment periods',treatnum); % Title for treatment plot
 
+        
         % Population subplot
-        subplot(211),plot(soltab(:,1),soltab(:,2),'r'), line([0 tmax], [muX muX], 'Color', 'k')
+        subplot(311),plot(soltab(:,1),soltab(:,2),'r'), line([0 tmax], [muX muX], 'Color', 'k')
         title('Population density vs time'),axis([0 tmax 0 100])
         text(tmax-tmax*0.2,muX+10,x_label)
 
         % Resistance strategy subplot
-        subplot(212), plot(soltab(:,1),soltab(:,3),'b'), line([0 tmax], [muU muU], 'Color', 'k')
+        subplot(313), plot(soltab(:,1),soltab(:,3),'b'), line([0 tmax], [muU muU], 'Color', 'k')
         title('Evolved resistance vs time'),axis tight
         text(tmax-tmax*0.2,muU+max(soltab(:,3))/10,u_label)
+        
+        % Optimized treatment regime subplot
+        subplot(312), plot(soltab(:,1),soltab(:,4),'g'),
+        title(m_title),axis tight
     end
 
     treatnum=treatnum*2; % Number of treatment / control points

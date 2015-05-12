@@ -26,13 +26,12 @@ h = @evaluate_fitness;
         dt=sys_input.tmax/rk_steps;
         
         sol=[sys_input.x0, sys_input.u0];
-        soltab(1,:) = [t, sol];
+        soltab(1,:) = [t, sol, th(t)];
         
         for i=2:rk_steps
             sol=rk(t,sol,dt,th);
             t=t+dt;
-            % need to implement some kind of table to store the solutions
-            soltab(i,:) = [t,sol];
+            soltab(i,:) = [t,sol,th(t)];
         end
         
         counter = counter + 1;
