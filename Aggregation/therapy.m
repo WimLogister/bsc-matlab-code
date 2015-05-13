@@ -62,14 +62,24 @@ treat4 = @(t) t^2*(3/tmax^2);
 % Declare system input variables
 tumorIni=100; % Initial cancer cell population size
 stratIni=0.0; % Initial phenotypic strategy (resistance) value
-tmax=365; % Total simulation time
+tmax=200; % Total simulation time
 
-treatnum = tmax;
+treatnum = 25;
 cntr = 1;
 
 global soltab % Used to store solutions to differential equations
 
-while treatnum < treatnum + 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   Simulation control variables                                %
+    optimize = 1; % 0 For regular solving, > 0 for optimization %
+    show_plot = 1; % 0 For not plotting, > 0 for plotting       %
+%                                                               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if optimize == 0
+    treatnum = tmax/2;
+end
+
+while treatnum < tmax
     
     m0=zeros(1,treatnum); % Initial treatment guess for optimizer
     mmax=0.2; % Maximum treatment amount
@@ -79,7 +89,7 @@ while treatnum < treatnum + 1
     % Save system input in structure
     system_input=struct('x0',tumorIni,'u0',stratIni,'tmax',tmax);
     T=linspace(0,tmax-tmax/treatnum,treatnum); % Vector holding time points
-    rk_timesteps=750; % Number of Runge-Kutte ODE integration steps
+    rk_timesteps=500; % Number of Runge-Kutte ODE integration steps
 
     % treat is a function handle to the fitness function
     treat = get_fitness_handle(system_input,T,rk_timesteps);
@@ -88,16 +98,17 @@ while treatnum < treatnum + 1
     % variables sum to the appropriate amount
     A=ones(1,treatnum);
     b=normtreat*treatnum;
-
-    optimize = 1; % 0 For regular solving, > 0 for optimization
-    show_plot = 1; % 0 For not plotting, > 0 for plotting
-
+    
     if optimize > 0
-        options=optimset('Maxiter',1000,'DiffMinChange',1e-12,'Display','iter-detailed');
+        options=optimset('Maxiter',1000,'DiffMinChange',1e-12);
+        %options=optimset('Maxiter',1000,'DiffMinChange',1e-12,'Display','iter-detailed');
         res=fmincon(treat,m0,A,b,[],[],zeros(1,numel(m0)),mmax*ones(1,numel(m0)),[],options); 
     else
         res=treat(normtreat+m0);
     end
+    
+    treatnum
+    sum_res=sum(res)
 
     muX=mean(soltab(:,2)); % Mean population density
     muU=mean(soltab(:,3)); % Mean resistance strategy
@@ -116,7 +127,6 @@ while treatnum < treatnum + 1
         u_label = sprintf('mu_{u} = %.3f',muU); % Label for resistance mean
         m_title = sprintf('Opt. treat sched., %u treatment periods',treatnum); % Title for treatment plot
 
-        
         % Population subplot
         subplot(311),plot(soltab(:,1),soltab(:,2),'r'), line([0 tmax], [muX muX], 'Color', 'k')
         title('Population density vs time'),axis([0 tmax 0 100])
@@ -129,13 +139,9 @@ while treatnum < treatnum + 1
         
         % Optimized treatment regime subplot
         subplot(312), plot(soltab(:,1),soltab(:,4),'g'),
-        title(m_title),axis tight
+        title(m_title),axis([0 tmax 0 mmax*1.25])
     end
 
     treatnum=treatnum*2; % Number of treatment / control points
     cntr=cntr+1;
 end
-
-% a = struct('muX',73.5,'muU',3.5,'numpoints',24); % Create structure
-% struct2csv(a,'test.dat') % Write data
-% A=importdata('test.dat') % Read data
