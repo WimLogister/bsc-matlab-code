@@ -70,7 +70,7 @@ global soltab % Used to store solutions to differential equations
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simulation control variables                                  %
-    optimize = 0; % 0 For regular solving, > 0 for optimization
+    optimize = 1; % 0 For regular solving, > 0 for optimization
     show_plot = 0; % 0 For suppressing plot, > 0 for showing plot
     save_plot = 1; % 0 For discarding plot, > 0 for saving plot to disk
     outer_loop = 0:0; % Outer loop controls how often we increment parameter of interest
@@ -82,9 +82,9 @@ if show_plot > 0 | save_plot > 0
     create_plot = 1;
 end
 
-for i = 0:0
+for i = 1:4
 
-    for j = 0:0
+    for j = 0:3
     
         % Number of treatment control points, as multiple of init_treatnum
         treatnum = 2^j * init_treatnum
@@ -127,16 +127,17 @@ for i = 0:0
         struct2csv(output, out_filename);
 
         if create_plot > 0
-            % Plot results
-            my_fig=figure('visible','off');
+            % Create plot showing results
+            my_fig=figure;
 
             x_label = sprintf('mu_{X} = %.3f',muX); % Label for population mean
             u_label = sprintf('mu_{u} = %.3f',muU); % Label for resistance mean
             m_title = sprintf('Opt. treat sched., %u treatment periods',treatnum); % Title for treatment plot
+            x_title = sprintf('Population density vs time, b=%.1f',b);
 
             % Population subplot
             subplot(311),plot(soltab(:,1),soltab(:,2),'r'), line([0 tmax], [muX muX], 'Color', 'k')
-            title('Population density vs time'),axis([0 tmax 0 100])
+            title(x_title),axis([0 tmax 0 100])
             text(tmax-tmax*0.2,muX+10,x_label)
 
             % Resistance strategy subplot
@@ -149,7 +150,7 @@ for i = 0:0
             title(m_title),axis([0 tmax 0 mmax*1.25])
             
             % Save everything to file
-            fig_name = sprintf('b=%.1f tmax=%u cp=%u',params.b,tmax,treatnum);
+            fig_name = sprintf('b=%u tmax=%u cp=%u',params.b*10,tmax,treatnum);
             saveas(my_fig,fig_name,'fig');
             saveas(my_fig,fig_name,'png');
         end
