@@ -8,7 +8,7 @@ rval=0.1; % Cancer growth rate
 sigval=1; % Penalty to total pop. for increased resistance
 Kmaxval=100; % Maximum carrying capacity
 kval=0.1; % Cells' de novo resistance to therapy
-bval=2.5; % Effectiveness of resistance
+bval=5; % Effectiveness of resistance
 mval=0.1; % Chemotherapy dosage (paper says 0.1 for monotherapy)
 sval=0.01; % Evolutionary speed
 
@@ -82,9 +82,9 @@ if show_plot > 0 | save_plot > 0
     create_plot = 1;
 end
 
-for i = 1:4
+for i = 1:3 % Outer loop controlling parameters
 
-    for j = 0:3
+    for j = 0:3 % Inner loop controlling control points
     
         % Number of treatment control points, as multiple of init_treatnum
         treatnum = 2^j * init_treatnum
@@ -155,4 +155,5 @@ for i = 1:4
             saveas(my_fig,fig_name,'png');
         end
     end
+    params.b=params.b*2;
 end
