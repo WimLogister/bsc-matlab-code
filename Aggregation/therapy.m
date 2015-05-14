@@ -133,7 +133,7 @@ for i = 1:4
             x_label = sprintf('mu_{X} = %.3f',muX); % Label for population mean
             u_label = sprintf('mu_{u} = %.3f',muU); % Label for resistance mean
             m_title = sprintf('Opt. treat sched., %u treatment periods',treatnum); % Title for treatment plot
-            x_title = sprintf('Population density vs time, b=%.1f',b);
+            x_title = sprintf('Population density vs time, b=%.2f',params.b);
 
             % Population subplot
             subplot(311),plot(soltab(:,1),soltab(:,2),'r'), line([0 tmax], [muX muX], 'Color', 'k')
@@ -149,8 +149,8 @@ for i = 1:4
             subplot(312), plot(soltab(:,1),soltab(:,4),'g'),
             title(m_title),axis([0 tmax 0 mmax*1.25])
             
-            % Save everything to file
-            fig_name = sprintf('b=%u tmax=%u cp=%u',params.b*10,tmax,treatnum);
+            % Save plot to file
+            fig_name = sprintf('b=%u tmax=%u cp=%u',round(params.b),tmax,treatnum);
             saveas(my_fig,fig_name,'fig');
             saveas(my_fig,fig_name,'png');
         end
