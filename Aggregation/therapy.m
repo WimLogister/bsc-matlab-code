@@ -8,7 +8,7 @@ rval=0.1; % Cancer growth rate
 sigval=1; % Penalty to total pop. for increased resistance
 Kmaxval=100; % Maximum carrying capacity
 kval=0.1; % Cells' de novo resistance to therapy
-bval=5; % Effectiveness of resistance
+bval=2.5; % Effectiveness of resistance
 mval=0.1; % Chemotherapy dosage (paper says 0.1 for monotherapy)
 sval=0.01; % Evolutionary speed
 
@@ -62,7 +62,7 @@ tumorIni=100; % Initial cancer cell population size
 stratIni=0.0; % Initial phenotypic strategy (resistance) value
 tmax=200; % Total simulation time
 
-init_treatnum = 24;
+init_treatnum = 1;
 
 
 global soltab % Used to store solutions to differential equations
@@ -70,10 +70,10 @@ global soltab % Used to store solutions to differential equations
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simulation control variables                                  %
-    optimize = 1; % 0 For regular solving, > 0 for optimization
+    optimize = 0; % 0 For regular solving, > 0 for optimization
     show_plot = 0; % 0 For suppressing plot, > 0 for showing plot
     save_plot = 1; % 0 For discarding plot, > 0 for saving plot to disk
-    outer_loop = 0:0; % Outer loop controls how often we increment parameter of interest
+    outer_loop = 1:4; % Outer loop controls how often we increment parameter of interest
     inner_loop = 0:0; % Inner loop controls how often we increment # of control pts
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -82,9 +82,9 @@ if show_plot > 0 | save_plot > 0
     create_plot = 1;
 end
 
-for i = 1:3 % Outer loop controlling parameters
+for i = outer_loop % Outer loop controlling parameters
 
-    for j = 0:3 % Inner loop controlling control points
+    for j = inner_loop % Inner loop controlling control points
     
         % Number of treatment control points, as multiple of init_treatnum
         treatnum = 2^j * init_treatnum
@@ -114,8 +114,6 @@ for i = 1:3 % Outer loop controlling parameters
         else
             res=treat(normtreat+m0);
         end
-
-        sum_res=sum(res)
 
         muX=mean(soltab(:,2)); % Mean population density
         muU=mean(soltab(:,3)); % Mean resistance strategy
