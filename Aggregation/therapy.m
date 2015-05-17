@@ -10,7 +10,7 @@ Kmaxval=100; % Maximum carrying capacity
 kval=0.1; % Cells' de novo resistance to therapy
 bval=5; % Effectiveness of resistance
 mval=0.1; % Chemotherapy dosage (paper says 0.1 for monotherapy)
-sval=0.01; % Evolutionary speed
+sval=0.1; % Evolutionary speed
 
 % Aggregation parameters
 alphaval=1; % Power to determine the type of aggregation effect
@@ -33,11 +33,12 @@ dilution = struct('name','dilution','alpha',0,'beta',0);
 group_detox = struct('name','group detoxification','alpha',1,'beta',0.6);
 danger = struct('name','danger in numbers','alpha',1.5,'beta',0);
 sellout = struct('name','group sellout','alpha',1,'beta',-0.6);
-alphas_betas = {dilution group_detox danger sellout};
+%alphas_betas2 = {dilution group_detox danger sellout};
+alphas_betas2 = {danger sellout};
 
 N1 = struct('name','N=1','Nfun',@(x)1);
 Nx = struct('name','N=1+x/10','Nfun',@(x)1+x/10);
-Ns = {N1 Nx};
+Ns = {Nx};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% 2. Solve system and display results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -59,8 +60,8 @@ global soltab % Used to store solutions to differential equations
     optimize = 1; % 0 For regular solving, > 0 for optimization
     show_plot = 1; % 0 For suppressing plot, > 0 for showing plot
     save_plot = 0; % 0 For discarding plot, > 0 for saving plot to disk
-    outer_loop = 1:2; % Outer loop controlling N
-    mid_loop = 1:4; % Middle loop controls how often we increment parameter of interest
+    outer_loop = 1:numel(Ns); % Outer loop controlling N
+    mid_loop = 1:numel(alphas_betas2); % Middle loop controls how often we increment parameter of interest
     inner_loop = 0:0; % Inner loop controls how often we increment # of control pts
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -75,7 +76,7 @@ for i = outer_loop % Outer loop controlling different N
     params.N = currN.Nfun;
     
     for j = mid_loop % Middle loop controlling alpha and beta values
-        eff = alphas_betas{j};
+        eff = alphas_betas2{j};
         params.alpha = eff.alpha;
         params.beta = eff.beta;
         
@@ -90,7 +91,7 @@ for i = outer_loop % Outer loop controlling different N
             % Save system input in structure
             system_input=struct('x0',tumorIni,'u0',stratIni,'tmax',tmax);
             T=linspace(0,tmax-tmax/treatnum,treatnum); % Vector holding time points
-            rk_timesteps=750; % Number of Runge-Kutte ODE integration steps
+            rk_timesteps=2500; % Number of Runge-Kutte ODE integration steps
 
             % treat is a function handle to the fitness function
             treat = get_fitness_handle(system_input,T,rk_timesteps);
