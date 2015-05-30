@@ -35,7 +35,7 @@ h = @evaluate_fitness;
         end
         
         counter = counter + 1;
-        if mod(counter,100) == 0
+        if mod(counter,1000) == 0
             disp(counter);
         end
         

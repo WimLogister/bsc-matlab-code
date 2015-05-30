@@ -4,11 +4,11 @@
 clear all
 
 % System constants
-rval=0.1; % Cancer growth rate
-sigval=1; % Penalty to total pop. for increased resistance
+rval=1.7; % Cancer growth rate
+sigval=5; % Penalty to total pop. for increased resistance
 Kmaxval=100; % Maximum carrying capacity
-kval=0.1; % Cells' de novo resistance to therapy
-bval=5; % Effectiveness of resistance
+kval=0.005; % Cells' de novo resistance to therapy
+bval=0.05; % Effectiveness of resistance
 mval=0.1; % Chemotherapy dosage (paper says 0.1 for monotherapy)
 sval=0.1; % Evolutionary speed
 
@@ -28,17 +28,19 @@ global params
 params = struct('r',rval,'sig',sigval,'Kmax',Kmaxval,'k',kval,'b',bval,...
     'm',mval,'s',sval,'alpha',alphaval,'beta',betaval,'N',Nval);
 
-
-dilution = struct('name','dilution','alpha',0,'beta',0);
-group_detox = struct('name','group detoxification','alpha',1,'beta',0.6);
-danger = struct('name','danger in numbers','alpha',1.5,'beta',0);
-sellout = struct('name','group sellout','alpha',1,'beta',-0.6);
-%alphas_betas2 = {dilution group_detox danger sellout};
-alphas_betas2 = {danger sellout};
+dilution = struct('name','dilution','alpha',0,'beta',0,'rksteps',2000);
+group_detox = struct('name','group detoxification','alpha',1,'beta',0.6,'rksteps',5000);
+danger = struct('name','danger in numbers','alpha',1.2,'beta',0,'rksteps',5000);
+sellout = struct('name','group sellout','alpha',1,'beta',-0.6,'rksteps',5000);
+alphas_betas = {dilution};
+%alphas_betas = {dilution group_detox};
 
 N1 = struct('name','N=1','Nfun',@(x)1);
-Nx = struct('name','N=1+x/10','Nfun',@(x)1+x/10);
-Ns = {Nx};
+N5 = struct('name','N=5','Nfun',@(x)5);
+N10 = struct('name','N=10','Nfun',@(x)10);
+Nx = struct('name','varN','Nfun',@(x)1+x/10);
+Nxx = struct('name','Nx','Nfun',@(x)x);
+Ns = {N5};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% 2. Solve system and display results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,22 +49,21 @@ Ns = {Nx};
 % Declare system input variables
 tumorIni=100; % Initial cancer cell population size
 stratIni=0.0; % Initial phenotypic strategy (resistance) value
-tmax=200; % Total simulation time
-
-init_treatnum = 100;
-
+tmax=100; % Total simulation time
 
 global soltab % Used to store solutions to differential equations
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simulation control variables                                  %
-    optimize = 1; % 0 For regular solving, > 0 for optimization
+    optimize = 0; % 0 For regular solving, > 0 for optimization
     show_plot = 1; % 0 For suppressing plot, > 0 for showing plot
     save_plot = 0; % 0 For discarding plot, > 0 for saving plot to disk
     outer_loop = 1:numel(Ns); % Outer loop controlling N
-    mid_loop = 1:numel(alphas_betas2); % Middle loop controls how often we increment parameter of interest
-    inner_loop = 0:0; % Inner loop controls how often we increment # of control pts
+    mid_loop = 1:numel(alphas_betas); % Middle loop controls how often we increment parameter of interest
+    inner_loop = 0.5; % Inner loop controls how often we increment # of control pts
+    treatnum = 160;
+    save_results = 0; % > 0 To save optimized treatment schedule, 0 to discard
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -76,47 +77,49 @@ for i = outer_loop % Outer loop controlling different N
     params.N = currN.Nfun;
     
     for j = mid_loop % Middle loop controlling alpha and beta values
-        eff = alphas_betas2{j};
+        eff = alphas_betas{j};
         params.alpha = eff.alpha;
         params.beta = eff.beta;
         
-        for k = inner_loop % Inner loop controlling control points
-
-            % Number of treatment control points, as multiple of init_treatnum
-            treatnum = 2^k * init_treatnum;
+        for mmax = inner_loop % Inner loop controlling control points
 
             m0=zeros(1,treatnum); % Initial treatment guess for optimizer
-            mmax=0.5; % Maximum treatment intensity
 
             % Save system input in structure
             system_input=struct('x0',tumorIni,'u0',stratIni,'tmax',tmax);
             T=linspace(0,tmax-tmax/treatnum,treatnum); % Vector holding time points
-            rk_timesteps=2500; % Number of Runge-Kutte ODE integration steps
+            rk_timesteps=eff.rksteps; % Number of Runge-Kutte ODE integration steps
 
             % treat is a function handle to the fitness function
             treat = get_fitness_handle(system_input,T,rk_timesteps);
 
             % A and b are a system of equations that make sure that all the decision
             % variables sum to the appropriate amount
-            A=ones(1,treatnum);
-            b=params.m*treatnum;
+            %A=ones(1,treatnum);
+            %b=0.5*params.m*treatnum;
+            
+            load('resdist.mat');
+            treat_cutoff = 100;
+            m0cons=[params.m*ones(1,treat_cutoff) zeros(1,treatnum-treat_cutoff)];
+            A=[ones(1,treat_cutoff) zeros(1,treatnum-treat_cutoff);...
+                zeros(1,treat_cutoff) ones(1,treatnum-treat_cutoff)];
+            b=[params.m*treat_cutoff; 0];
+            
 
             if optimize > 0
-                options=optimset('Maxiter',1000,'DiffMinChange',1e-12);
+                options=optimset('Maxiter',1000,'DiffMinChange',1e-6);
                 %options=optimset('Maxiter',1000,'DiffMinChange',1e-12,'Display','iter-detailed');
                 res=fmincon(treat,m0,A,b,[],[],zeros(1,numel(m0)),mmax*ones(1,numel(m0)),[],options); 
+                if save_results > 0
+                    res_filename = sprintf('%utmax%ucpts_%s',tmax,treatnum,eff.name);
+                    save(res_filename,'res');
+                end
             else
-                res=treat(params.m+m0);
+                res=treat(m0cons);
             end
 
             muX=mean(soltab(:,2)); % Mean population density
             muU=mean(soltab(:,3)); % Mean resistance strategy
-
-            output = struct('ctrlpts',treatnum,'muX',muX,'muU',muU,'optimal',res);
-
-            out_filename = sprintf('optimize%u.dat',treatnum);
-
-            struct2csv(output, out_filename);
 
             if create_plot > 0
                 % Create plot showing results
@@ -124,13 +127,13 @@ for i = outer_loop % Outer loop controlling different N
 
                 x_label = sprintf('mu_{X} = %.3f',muX); % Label for population mean
                 u_label = sprintf('mu_{u} = %.3f',muU); % Label for resistance mean
-                m_title = sprintf('Opt. treat sched., %u treatment periods',treatnum); % Title for treatment plot
+                m_title = sprintf('Opt. treat sched., %u treatment periods, mmax=%.3f',treat_cutoff,mmax); % Title for treatment plot
                 x_title = sprintf('Pop dty vs time, %s, alpha=%.1f, beta=%.1f, effect=%s',currN.name,params.alpha,params.beta,eff.name);
 
                 % Population subplot
                 subplot(311),plot(soltab(:,1),soltab(:,2),'r'), line([0 tmax], [muX muX], 'Color', 'k')
-                title(x_title),axis([0 tmax 0 100])
-                text(tmax-tmax*0.2,muX+10,x_label)
+                title(x_title),axis([0 tmax 0 params.Kmax])
+                text(tmax-tmax*0.2,muX+1,x_label)
 
                 % Resistance strategy subplot
                 subplot(313), plot(soltab(:,1),soltab(:,3),'b'), line([0 tmax], [muU muU], 'Color', 'k')
@@ -143,10 +146,13 @@ for i = outer_loop % Outer loop controlling different N
 
                 % Save plot to file
                 if save_plot > 0
-                    fig_name = sprintf('b=%u tmax=%u cp=%u',round(params.b),tmax,treatnum);
-                    saveas(my_fig,fig_name,'fig');
-                    saveas(my_fig,fig_name,'png');
+                    %baseFileName = sprintf('figure_%d.jpg',k);
+                    baseFileName = sprintf('%s_%s.png',currN.name,eff.name);
+                    fullFileName = fullfile('C:\Users\Wim\Documents\KE\Bsc Thesis\Code\Aggregation\26-5-2015', baseFileName);  
+                    my_fig; % Activate the figure again.
+                    exportfig(fullFileName); % Using export_fig instead of saveas.
                 end
+                sum_res=sum(res)
             end
         end
     end
