@@ -28,25 +28,25 @@ global params
 params = struct('r',rval,'sig',sigval,'Kmax',Kmaxval,'k',kval,'b',bval,...
     'm',mval,'s',sval,'alpha',alphaval,'beta',betaval,'N',Nval);
 
-dilution = struct('name','dilution','alpha',0,'beta',0,'rksteps',10000);
-group_detox = struct('name','group detoxification','alpha',1,'beta',0.1,'rksteps',50000);
-danger = struct('name','danger in numbers','alpha',1.3,'beta',0,'rksteps',10000);
-sellout = struct('name','group sellout','alpha',1,'beta',-0.005,'rksteps',50000);
-switchover = struct('name','switchover','alpha',0,'beta',-0.005,'rksteps',50000);
-best_case = struct('name','best_case','alpha',0,'beta',0.1,'rksteps',50000);
-worst_case = struct('name','worst_case','alpha',1.3,'beta',-0.005,'rksteps',50000);
-
-%alphas_betas = {dilution};
+dilution = struct('name','dilution','alpha',0,'beta',0,'rksteps',20000);
+group_detox = struct('name','group detoxification','alpha',1,'beta',0.1,'rksteps',30000);
+danger = struct('name','danger in numbers','alpha',1.3,'beta',0,'rksteps',20000);
+sellout = struct('name','group sellout','alpha',1,'beta',-0.005,'rksteps',5000);
+switchover = struct('name','switchover','alpha',0,'beta',-0.005,'rksteps',2000);
+best_case = struct('name','best_case','alpha',0,'beta',0.1,'rksteps',5000);
+worst_case = struct('name','worst_case','alpha',1.3,'beta',-0.005,'rksteps',5000);
 
 %alphas_betas = {dilution group_detox danger sellout switchover best_case worst_case};
-alphas_betas = {dilution danger};
+%alphas_betas = {danger sellout switchover worst_case};
+alphas_betas = {worst_case};
 
 N1 = struct('name','N=1','Nfun',@(x)1);
 N5 = struct('name','N=5','Nfun',@(x)5);
 N10 = struct('name','N=10','Nfun',@(x)10);
 Nx = struct('name','N=1+x_10','Nfun',@(x)1+x/10);
 Nxx = struct('name','N=x','Nfun',@(x)x);
-Ns = {Nxx};
+Nx2 = struct('name','N=x_2','Nfun',@(x)x/5);
+Ns = {N1 N5 N10};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% 2. Solve system and display results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -63,8 +63,8 @@ global soltab % Used to store solutions to differential equations
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simulation control variables                                  %
     optimize = 0; % 0 For regular solving, > 0 for optimization
-    show_plot = 1; % 0 For suppressing plot, > 0 for showing plot
-    save_plot = 0; % 0 For discarding plot, > 0 for saving plot to disk
+    create_plot = 0; % 0 For suppressing plot, > 0 for showing plot
+    save_data = 1; % 0 For discarding plot, > 0 for saving plot to disk
     outer_loop = 1:numel(Ns); % Outer loop controlling N
     mid_loop = 1:numel(alphas_betas); % Middle loop controls how often we increment parameter of interest
     inner_loop = 0.5; % Inner loop controls how often we increment # of control pts
@@ -72,11 +72,6 @@ global soltab % Used to store solutions to differential equations
     save_results = 0; % > 0 To save optimized treatment schedule, 0 to discard
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-create_plot = 0;
-if show_plot > 0 || save_plot > 0
-    create_plot = 1;
-end
 
 for i = outer_loop % Outer loop controlling different N
     currN = Ns{i};
@@ -89,6 +84,7 @@ for i = outer_loop % Outer loop controlling different N
         
         for mmax = inner_loop % Inner loop controlling control points
 
+            soltab = [];
             m0=zeros(1,treatnum); % Initial treatment guess for optimizer
 
             % Save system input in structure
@@ -128,9 +124,11 @@ for i = outer_loop % Outer loop controlling different N
             muX=mean(soltab(:,2)); % Mean population density
             muU=mean(soltab(:,3)); % Mean resistance strategy
             
-            filename=sprintf('%s_%s%s.m',eff.name,currN.name,cons_tag);
-            dlmwrite(filename, soltab);
-
+            if save_data > 0    
+                filename=sprintf('%s_%s%s.m',eff.name,currN.name,cons_tag);
+                dlmwrite(filename, soltab);
+            end
+            
             if create_plot > 0
                 % Create plot showing results
                 my_fig=figure;
@@ -154,14 +152,6 @@ for i = outer_loop % Outer loop controlling different N
                 subplot(312), plot(soltab(:,1),soltab(:,4),'g'),
                 title(m_title),axis([0 tmax 0 mmax*1.25])
 
-                % Save plot to file
-                if save_plot > 0
-                    %baseFileName = sprintf('figure_%d.jpg',k);
-                    baseFileName = sprintf('%s_%s.png',currN.name,eff.name);
-                    fullFileName = fullfile('C:\Users\Wim\Documents\KE\Bsc Thesis\Code\Aggregation\26-5-2015', baseFileName);  
-                    my_fig; % Activate the figure again.
-                    exportfig(fullFileName); % Using export_fig instead of saveas.
-                end
                 sum_res=sum(res)
             end
         end
