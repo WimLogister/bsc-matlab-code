@@ -4,7 +4,7 @@
 root_pathname = 'C:\Users\Wim\Documents\KE\Bsc Thesis\Code\Aggregation\Cluster Data\';
 folder_names = {'best_case', 'danger in numbers', 'dilution', 'group detoxification',...
     'group sellout', 'switchover', 'worst_case'};
-filenames = {'Nx', 'N=1+x_10'};
+filenames = {'N=1+x_10'};
 
 tmax = 100;
 
@@ -16,10 +16,10 @@ for i=1:numel(folder_names)
     myfig=figure;
     fol_name = sprintf('%s%s',root_pathname,folder_names{i});
     for j=1:numel(filenames)
-        curr_filename = filenames{i};
         title('Opt (Left) vs Cstnt (Right), Dilution Effect');
-        opt_filename = sprintf('%s%s.m',pathname,curr_filename);
-        cons_filename = sprintf('%s%s_CONS.m',pathname,curr_filename);
+        trunk_filename = sprintf('%s%s\\%s_%s',root_pathname,folder_names{i},folder_names{i},filenames{j});
+        opt_filename = sprintf('%s.m',trunk_filename);
+        cons_filename = sprintf('%s_CONS.m',trunk_filename);
         opt=dlmread(opt_filename);
         cons=dlmread(cons_filename);
 
@@ -73,7 +73,8 @@ for i=1:numel(folder_names)
         title('Evolved resistance vs time (Constant treatment)'),axis([0 tmax 0 res_ax_max]),
         text(100-100*0.2,muUcons+max(cons(:,3))/10,u_label)
 
-        new_filename=strrep(curr_filename,'_',' ');
+        
+        new_filename=strrep(sprintf('%s %s',folder_names{i},filenames{j}),'_',' ');
         p=mtit(new_filename);
     end
 end
