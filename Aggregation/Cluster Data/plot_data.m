@@ -2,9 +2,10 @@
 % Worst Case
 
 root_pathname = 'C:\Users\Wim\Documents\KE\Bsc Thesis\Code\Aggregation\Cluster Data\';
-folder_names = {'best_case', 'danger in numbers', 'dilution', 'group detoxification',...
-    'group sellout', 'switchover', 'worst_case'};
-filenames = {'N=1+x_10'};
+%folder_names = {'best_case', 'danger in numbers', 'dilution', 'group detoxification',...
+%   'group sellout', 'switchover', 'worst_case'};
+folder_names = {'danger in numbers'};
+filenames = {'N=1','N=5','N=10'};
 
 tmax = 100;
 
@@ -13,13 +14,13 @@ green = [0 1 0];
 blue = [0 0 1];
 
 for i=1:numel(folder_names)
-    myfig=figure;
     fol_name = sprintf('%s%s',root_pathname,folder_names{i});
     for j=1:numel(filenames)
+        myfig=figure;
         title('Opt (Left) vs Cstnt (Right), Dilution Effect');
-        trunk_filename = sprintf('%s%s\\%s_%s',root_pathname,folder_names{i},folder_names{i},filenames{j});
-        opt_filename = sprintf('%s.m',trunk_filename);
-        cons_filename = sprintf('%s_CONS.m',trunk_filename);
+        trunk_filename = sprintf('%s%s\\alternate_setup\\%s_%s',root_pathname,folder_names{i},folder_names{i},filenames{j});
+        opt_filename = sprintf('%s_DIFFERENT_ALPHA.m',trunk_filename);
+        cons_filename = sprintf('%s_CONS_DIFFERENT_ALPHA.m',trunk_filename);
         opt=dlmread(opt_filename);
         cons=dlmread(cons_filename);
 
