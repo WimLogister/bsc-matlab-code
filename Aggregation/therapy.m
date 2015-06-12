@@ -16,9 +16,9 @@ global soltab % Used to store solutions to differential equations
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simulation control variables                                  %
-    optimize = 0; % 0 For regular solving, > 0 for optimization
-    create_plot = 1; % 0 For suppressing plot, > 0 for showing plot
-    save_data = 0; % 0 For discarding plot, > 0 for saving plot to disk
+    optimize = 1; % 0 For regular solving, > 0 for optimization
+    create_plot = 0; % 0 For suppressing plot, > 0 for showing plot
+    save_data = 1; % 0 For discarding plot, > 0 for saving plot to disk
     outer_loop = 1:numel(Ns); % Outer loop controlling N
     mid_loop = 1:numel(alphas_betas); % Middle loop controls how often we increment parameter of interest
     treatnum = 100;
@@ -73,16 +73,18 @@ for i = outer_loop % Outer loop controlling different N
             muU=uneven_av([soltab(:,1) soltab(:,3)]); % Mean resistance strategy
             
             if save_data > 0
-                % Write optimized data to file
-                filename=sprintf('%s_%s%s.m',eff.name,currN.name,cons_tag);
-                dlmwrite(filename, soltab);
+                if optimize > 0
+                    % Write optimized data to file
+                    filename=sprintf('%s_%s%s_ODE45_TEST.m',eff.name,currN.name,cons_tag);
+                    dlmwrite(filename, soltab);
+                end
                 
                 % Write constant treatment data to file (ugly but it should
                 % work)
                 soltab = [];
                 res=treat(m0cons);
                 cons_tag = '_CONS';
-                filename=sprintf('%s_%s%s.m',eff.name,currN.name,cons_tag);
+                filename=sprintf('%s_%s%s_ODE45_TEST.m',eff.name,currN.name,cons_tag);
                 dlmwrite(filename, soltab);
             end
             

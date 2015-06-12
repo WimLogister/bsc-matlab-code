@@ -45,6 +45,11 @@ h = @evaluate_fitness;
         if mod(counter,1000) == 0
             disp(counter);
         end
+
+        for i=1:size(soltab(:,1),1)
+            soltab(i,4)=params.treat(soltab(i,1));
+        end
+        %soltab(:,4) = params.treat(soltab(:,1));
         
         fit = uneven_av(soltab(:,1:2));
 %         fit = sum(soltab(:,2));

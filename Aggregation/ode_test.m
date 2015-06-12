@@ -15,7 +15,7 @@ betaval=0.6; % Scaling factor for other tumor cells' resistance
 Nval=5; % Neighbourhood size
 
 % Optimization parameters
-mmax = 0.1;
+mmax = 0.5;
 
 % Model different aggregation effects by setting parameters as follows:
 % 1. Dilution: alpha = beta = 0
@@ -36,14 +36,14 @@ switchover = struct('name','switchover_LOWER_M','alpha',0,'beta',-0.005,'rksteps
 best_case = struct('name','best_case','alpha',0,'beta',0.1,'rksteps',5000);
 worst_case = struct('name','worst_case','alpha',1.4,'beta',-0.005,'rksteps',5000);
 
-%alphas_betas = {dilution};
+alphas_betas = {dilution group_detox danger sellout switchover best_case};
 %alphas_betas = {dilution};
 %alphas_betas = {group_detox};
 %alphas_betas = {danger};
 %alphas_betas = {sellout};
 %alphas_betas = {switchover};
 %alphas_betas = {best_case};
-alphas_betas = {worst_case};
+%alphas_betas = {worst_case};
 
 N1 = struct('name','N=1','Nfun',@(x)1);
 N5 = struct('name','N=5','Nfun',@(x)5);
@@ -51,6 +51,6 @@ N10 = struct('name','N=10','Nfun',@(x)10);
 Nx = struct('name','N=1+x_10','Nfun',@(x)1+x/10);
 Nxx = struct('name','N=x','Nfun',@(x)x);
 Nx2 = struct('name','N=x_2','Nfun',@(x)x/5);
-Ns = {N1 N5 N10};
+Ns = {Nx};
 
 therapy;
