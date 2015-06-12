@@ -9,6 +9,7 @@ function h = get_fitness_handle( sys_input, time_points,  rk_steps )
 
 global counter
 global soltab
+global params
 
 counter = 0;
 
@@ -22,23 +23,30 @@ h = @evaluate_fitness;
         % dosage at a given time t
         th = get_treatment_handle( time_points, treat_sched );
         
-        t=0;
-        dt=sys_input.tmax/rk_steps;
+        params.treat = th;
         
-        sol=[sys_input.x0, sys_input.u0];
-        soltab(1,:) = [t, sol, th(t)];
+        [T,Y] = ode45(@dosedyn, [0 sys_input.tmax], [sys_input.x0 sys_input.u0]);
         
-        for i=2:rk_steps
-            sol=rk(t,sol,dt,th);
-            t=t+dt;
-            soltab(i,:) = [t,sol,th(t)];
-        end
+        soltab = [T,Y];
+        
+%         t=0;
+%         dt=sys_input.tmax/rk_steps;
+%         
+%         sol=[sys_input.x0, sys_input.u0];
+%         soltab(1,:) = [t, sol, th(t)];
+%         
+%         for i=2:rk_steps
+%             sol=rk(t,sol,dt,th);
+%             t=t+dt;
+%             soltab(i,:) = [t,sol,th(t)];
+%         end
         
         counter = counter + 1;
         if mod(counter,1000) == 0
             disp(counter);
         end
         
-        fit = sum(soltab(:,2));
+        fit = uneven_av(soltab(:,1:2));
+%         fit = sum(soltab(:,2));
     end
 end

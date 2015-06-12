@@ -16,9 +16,9 @@ global soltab % Used to store solutions to differential equations
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Simulation control variables                                  %
-    optimize = 1; % 0 For regular solving, > 0 for optimization
-    create_plot = 0; % 0 For suppressing plot, > 0 for showing plot
-    save_data = 1; % 0 For discarding plot, > 0 for saving plot to disk
+    optimize = 0; % 0 For regular solving, > 0 for optimization
+    create_plot = 1; % 0 For suppressing plot, > 0 for showing plot
+    save_data = 0; % 0 For discarding plot, > 0 for saving plot to disk
     outer_loop = 1:numel(Ns); % Outer loop controlling N
     mid_loop = 1:numel(alphas_betas); % Middle loop controls how often we increment parameter of interest
     treatnum = 100;
@@ -45,9 +45,9 @@ for i = outer_loop % Outer loop controlling different N
             T=linspace(0,tmax-tmax/treatnum,treatnum); % Vector holding time points
             rk_timesteps=eff.rksteps; % Number of Runge-Kutte ODE integration steps
 
-            % treat is a function handle to the fitness function
+            % fitness is a function handle to the fitness function
             treat = get_fitness_handle(system_input,T,rk_timesteps);
-            treat_cutoff = 100;
+            treat_cutoff = 100; % Time point after which no treatment can be given
 
             % A and b are a system of equations that make sure that all the decision
             % variables sum to the appropriate amount
@@ -69,8 +69,8 @@ for i = outer_loop % Outer loop controlling different N
                 cons_tag = '_CONS';
             end
 
-            muX=mean(soltab(:,2)); % Mean population density
-            muU=mean(soltab(:,3)); % Mean resistance strategy
+            muX=uneven_av(soltab(:,1:2)); % Mean population density
+            muU=uneven_av([soltab(:,1) soltab(:,3)]); % Mean resistance strategy
             
             if save_data > 0
                 % Write optimized data to file
@@ -106,8 +106,8 @@ for i = outer_loop % Outer loop controlling different N
                 text(tmax-tmax*0.2,muU+max(soltab(:,3))/10,u_label)
 
                 % Optimized treatment regime subplot
-                subplot(312), plot(soltab(:,1),soltab(:,4),'g'),
-                title(m_title),axis([0 tmax 0 mmax*1.25])
+%                 subplot(312), plot(soltab(:,1),soltab(:,4),'g'),
+%                 title(m_title),axis([0 tmax 0 mmax*1.25])
 
                 sum_res=sum(res)
             end
