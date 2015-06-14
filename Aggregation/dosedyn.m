@@ -1,4 +1,4 @@
-function [ dx ] = dosedyn( t,x,treat )
+function [ dx ] = dosedyn( t,x )
 % Population and strategy dynamics for a single scalar phenotype strategy
 % according to Brown et al (2015).
 % x(1) is the population, x(2) is the resistance value, treat is the
@@ -7,7 +7,7 @@ function [ dx ] = dosedyn( t,x,treat )
 global params
 
     % Stores dx/dt and du/dt
-    dx=zeros(1,2);
+    dx=zeros(2,1);
     
     % Series of checks to keep population size and resistance amount within
     % reasonable bounds
@@ -16,7 +16,7 @@ global params
     end
     
     if x(1) < 0
-        x(1) = 0;
+        x(1) = eps;
     end
     
     if x(2) < 0
@@ -32,7 +32,7 @@ global params
     end
     
     % Compute numerator of treatment efficacy mu
-    top = (treat*params.N(x(1))^params.alpha)/params.N(x(1));
+    top = (params.treat(t)*params.N(x(1))^params.alpha)/params.N(x(1));
     
     % Compute denominator of mu
     % Note: since all models we consider only use a single scalar strategy, u = v
@@ -48,5 +48,9 @@ global params
     % Compute strategy value rate of change du/dt
     dx(2) = params.s*(-(params.r*x(1).*x(2))/(params.sig*params.Kmax*exp(x(2).^2./(2*params.sig^2))) ...
         + (top*params.b)/(params.k+params.N(x(1))*params.beta*x(2)+params.b*x(2))^2);
+    
+    if isnan(mu) || isnan(x(1)) || isnan(dx(1)) || isnan(dx(2))
+        exp(1);
+    end
 end
 
