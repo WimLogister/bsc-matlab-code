@@ -16,7 +16,7 @@ global params
     end
     
     if x(1) < 0
-        x(1) = 0;
+        x(1) = eps;
     end
     
     if x(2) < 0
@@ -48,5 +48,9 @@ global params
     % Compute strategy value rate of change du/dt
     dx(2) = params.s*(-(params.r*x(1).*x(2))/(params.sig*params.Kmax*exp(x(2).^2./(2*params.sig^2))) ...
         + (top*params.b)/(params.k+params.N(x(1))*params.beta*x(2)+params.b*x(2))^2);
+    
+    if isnan(mu) || isnan(x(1)) || isnan(dx(1)) || isnan(dx(2))
+        exp(1);
+    end
 end
 

@@ -1,4 +1,4 @@
-function h = get_fitness_handle( sys_input, time_points,  rk_steps )
+function h = get_fitness_handle( sys_input, time_points, solver )
 % Calling the outer function get_fitness_handle sets up everything to solve
 % the model given system input (initial values and time range), the model
 % parameters and number of integration steps. It returns a handle to anonymous
@@ -25,7 +25,11 @@ h = @evaluate_fitness;
         
         params.treat = th;
         
-        [T,Y] = ode45(@dosedyn, [0 sys_input.tmax], [sys_input.x0 sys_input.u0]);
+        if strcmp(solver,'ode45')
+            [T,Y] = ode45(@dosedyn, [0 sys_input.tmax], [sys_input.x0 sys_input.u0]);
+        elseif strcmp(solver,'ode15s')
+            [T,Y] = ode15s(@dosedyn, [0 sys_input.tmax], [sys_input.x0 sys_input.u0]);
+        end
         
         soltab = [T,Y];
         
