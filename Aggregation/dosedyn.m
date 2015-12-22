@@ -1,11 +1,13 @@
-function [ dx ] = dosedyn( t,x,dosage,p )
+function [ dx ] = dosedyn( t,x,treat )
 % Population and strategy dynamics for a single scalar phenotype strategy
 % according to Brown et al (2015).
-% x is the population, dosage is the treatment intensity, p is a struct
-% array storing system parameters
+% x(1) is the population, x(2) is the resistance value, treat is the
+% treatment intensity at time t.
+
+global params
 
     % Stores dx/dt and du/dt
-    dx=zeros(2,1);
+    dx=zeros(1,2);
     
     % Series of checks to keep population size and resistance amount within
     % reasonable bounds
@@ -14,7 +16,7 @@ function [ dx ] = dosedyn( t,x,dosage,p )
     end
     
     if x(1) < 0
-        x(1) = 0;
+        x(1) = eps;
     end
     
     if x(2) < 0
@@ -22,7 +24,7 @@ function [ dx ] = dosedyn( t,x,dosage,p )
     end
     
     % Compute carrying capacity K
-    K=p.Kmax.*exp((-x(2).^2)./(2*p.sig^2));
+    K=params.Kmax.*exp((-x(2).^2)./(2*params.sig^2));
     
     % K==0 leads to numerical problems (NaN)
     if K == 0
@@ -30,21 +32,30 @@ function [ dx ] = dosedyn( t,x,dosage,p )
     end
     
     % Compute numerator of treatment efficacy mu
-    top = (dosage*p.m*p.N^p.alpha)/p.N;
+    top = (treat*params.N(x(1))^params.alpha)/params.N(x(1));
     
     % Compute denominator of mu
     % Note: since all models we consider only use a single scalar strategy, u = v
     % and u is just a single scalar value.
-    bottom = p.k + p.N * p.beta * x(2) + p.b * x(2);
+    bottom = params.k + params.N(x(1)) * params.beta * x(2) + params.b * x(2);
     
-    % Compute mu = effect of therapy, mitigated by some resistance factors
+    % Compute mu = net effect of therapy
     mu = top/bottom;
     
     % Compute population rate of change dx/dt
-    dx(1) = x(1).*(p.r*((K-x(1))./K)-mu);
+    dx(1) = x(1).*(params.r*((K-x(1))./K)-mu);
 
     % Compute strategy value rate of change du/dt
-    dx(2) = p.s*(-(p.r*x(1).*x(2))/(p.sig*p.Kmax*exp(x(2).^2./(2*p.sig^2))) ...
-        + (top*p.b)/(p.k+p.N*p.beta*x(2)+p.b*x(2))^2);
+    dx(2) = params.s*...
+        (-(params.r*x(1).*x(2))...
+            /...
+            (params.sig*params.Kmax*exp(x(2).^2./(2*params.sig^2))) ...
+        + (top*params.b)...
+            /(params.k+params.N(x(1))*params.beta*x(2)+params.b*x(2))^2 ...
+        );
+    
+    if isnan(x(1)) || isnan(x(2)) || isnan(mu)
+        disp('NaN encountered in dosedyn');
+    end
 end
 
