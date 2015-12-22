@@ -10,11 +10,13 @@
 clear variables
 
 root_name = 'C:\Users\Wim\Documents\KE\Bsc Thesis\Code\Aggregation\Cluster Data\';
-folder_names = {'danger in numbers'};
+folder_names = {'switchover_LOWER_M'};
 filenames = {'N=1', 'N=5', 'N=10'};
 rep_filenames = {};
 for i=1:numel(filenames)
-    rep_filenames{i} = strrep(filenames{i},'=','');
+    new_name = strrep(filenames{i},'=','');
+    new_name = strrep(new_name,'+','');
+    rep_filenames{i} = new_name;
 end
 
 results = {};
@@ -22,7 +24,7 @@ for i=1:numel(folder_names)
     curr_folder_name = folder_names{i};
     %res = struct(rep_filenames{1},[],rep_filenames{2},[],rep_filenames{3},[]);
     effect_res = struct('name',curr_folder_name);
-    trunk_filename = sprintf('%s%s\\alternate_setup\\%s',root_name,curr_folder_name,curr_folder_name);
+    trunk_filename = sprintf('%s%s\\%s',root_name,curr_folder_name,curr_folder_name);
     for j=1:numel(filenames)
         curr_file_name = filenames{j};
         opt_filename = sprintf('%s_%s.m',trunk_filename,curr_file_name);

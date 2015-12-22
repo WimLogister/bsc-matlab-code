@@ -2,7 +2,7 @@ function [ dx ] = dosedyn( t,x,treat )
 % Population and strategy dynamics for a single scalar phenotype strategy
 % according to Brown et al (2015).
 % x(1) is the population, x(2) is the resistance value, treat is the
-% treatment intensity, p is a struct array storing system parameters
+% treatment intensity at time t.
 
 global params
 
@@ -39,18 +39,23 @@ global params
     % and u is just a single scalar value.
     bottom = params.k + params.N(x(1)) * params.beta * x(2) + params.b * x(2);
     
-    % Compute mu = effect of therapy, mitigated by some resistance factors
+    % Compute mu = net effect of therapy
     mu = top/bottom;
     
     % Compute population rate of change dx/dt
     dx(1) = x(1).*(params.r*((K-x(1))./K)-mu);
 
     % Compute strategy value rate of change du/dt
-    dx(2) = params.s*(-(params.r*x(1).*x(2))/(params.sig*params.Kmax*exp(x(2).^2./(2*params.sig^2))) ...
-        + (top*params.b)/(params.k+params.N(x(1))*params.beta*x(2)+params.b*x(2))^2);
+    dx(2) = params.s*...
+        (-(params.r*x(1).*x(2))...
+            /...
+            (params.sig*params.Kmax*exp(x(2).^2./(2*params.sig^2))) ...
+        + (top*params.b)...
+            /(params.k+params.N(x(1))*params.beta*x(2)+params.b*x(2))^2 ...
+        );
     
-    if isnan(mu) || isnan(x(1)) || isnan(dx(1)) || isnan(dx(2))
-        exp(1);
+    if isnan(x(1)) || isnan(x(2)) || isnan(mu)
+        disp('NaN encountered in dosedyn');
     end
 end
 
